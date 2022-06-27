@@ -13,14 +13,16 @@ import it.polito.tdp.yelp.model.User;
 public class YelpDao {
 	
 	
-	public List<Business> getAllBusiness(){
-		String sql = "SELECT * FROM Business";
+	public List<Business> getAllBusiness(String s){
+		String sql = "SELECT * FROM Business WHERE city = ?";
 		List<Business> result = new ArrayList<Business>();
 		Connection conn = DBConnect.getConnection();
 
 		try {
 			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, s);
 			ResultSet res = st.executeQuery();
+			
 			while (res.next()) {
 
 				Business business = new Business(res.getString("business_id"), 
@@ -111,5 +113,26 @@ public class YelpDao {
 		}
 	}
 	
+	public List<String> getCity(){
+		String sql="SELECT distinct(city) "
+				+ "FROM business ORDER BY city";
+		List<String> result = new ArrayList<String>();
+		Connection conn = DBConnect.getConnection();
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while(res.next()) {
+				result.add(res.getString("city"));
+			}
+			res.close();
+			st.close();
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}	
+	}
 	
 }

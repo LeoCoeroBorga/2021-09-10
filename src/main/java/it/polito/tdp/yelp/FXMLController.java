@@ -5,7 +5,10 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.yelp.model.Business;
 import it.polito.tdp.yelp.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -37,31 +40,68 @@ public class FXMLController {
     private TextField txtX2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbCitta"
-    private ComboBox<?> cmbCitta; // Value injected by FXMLLoader
+    private ComboBox<String> cmbCitta; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB1"
-    private ComboBox<?> cmbB1; // Value injected by FXMLLoader
+    private ComboBox<Business> cmbB1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB2"
-    private ComboBox<?> cmbB2; // Value injected by FXMLLoader
+    private ComboBox<Business> cmbB2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
     
     @FXML
     void doCreaGrafo(ActionEvent event) {
-    	
+    	if(cmbCitta.getValue()==null) {
+    		txtResult.setText("inserire una città!");
+    		return;
+    	}
+    	String city = cmbCitta.getValue();
+    	txtResult.setText(this.model.creaGrafo(city));
+    	this.cmbB1.getItems().clear();
+    	this.cmbB1.getItems().addAll(this.model.getBusinesses());
+    	this.cmbB2.getItems().clear();
+    	this.cmbB2.getItems().addAll(this.model.getBusinesses());
     }
 
     @FXML
     void doCalcolaLocaleDistante(ActionEvent event) {
-
-    	
+    	if(cmbCitta.getValue()==null) {
+    		txtResult.setText("inserire una città!");
+    		return;
+    	}
+    	if(cmbB1.getValue()==null) {
+    		txtResult.setText("scegliere un business!");
+    		return;
+    	}
+    	txtResult.setText(this.model.getLocaleDistanza(cmbB1.getValue()));
     }
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
-
+    	txtResult.clear();
+    	if(cmbCitta.getValue()==null) {
+    		txtResult.setText("inserire una città!");
+    		return;
+    	}
+    	if(cmbB1.getValue()==null || cmbB2.getValue()==null) {
+    		txtResult.setText("scegliere business di inizio e fine percorso!");
+    		return;
+    	}
+    	double n=0;
+    	try {
+			n = Double.parseDouble(txtX2.getText());
+		} catch (NumberFormatException e) {
+			txtResult.setText("inserire numero soglia stelle corretta!");
+			return;
+		}
+    	
+    	List<Business> lista =  this.model.cercaLista(cmbB1.getValue(), cmbB2.getValue(), n);
+    	for(Business b : lista) {
+    		txtResult.appendText("\n"+b.getBusinessName());
+    	}
+    	txtResult.appendText("\ntot km percorsi: "+this.model.getKM());
     }
 
 
@@ -80,5 +120,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	cmbCitta.getItems().clear();
+    	cmbCitta.getItems().addAll(this.model.getCity());
     }
 }
